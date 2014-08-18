@@ -29,7 +29,16 @@
         android:layout_below="@+id/etEditItem"
         android:layout_marginTop="25dp"
         android:onClick="onSubmit"
-        android:text="Save" />
+        android:text="@string/save" />
+
+    <Button
+        android:id="@+id/button1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/btnSave"
+        android:layout_toRightOf="@+id/textView1"
+        android:onClick="onCancel"
+        android:text="@string/cancel" />
 
 </RelativeLayout>
 

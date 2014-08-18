@@ -97,8 +97,9 @@ public class MainActivity extends Activity {
     		public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long rowId) {
     			Log.i("MainActivity", "Long Clicked item" + position);
     			AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+    			String pos = (String) items.get(position);
     			builder.setTitle(R.string.dialog_delete_title)
-    				.setMessage(R.string.dialog_delete_msg)
+    				.setMessage("Delete " + pos + "?")
     				.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
     					public void onClick(DialogInterface dialog, int id) {
     						//delete item

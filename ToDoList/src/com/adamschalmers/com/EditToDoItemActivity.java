@@ -1,6 +1,8 @@
 package com.adamschalmers.com;
 
 import android.app.Activity;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -26,7 +28,14 @@ public class EditToDoItemActivity extends Activity {
 		// show original content in the text field
 		etItem = (EditText)findViewById(R.id.etEditItem);
 		etItem.setText(editItem);
+
 	}
+
+	public void onCancel(View v) {
+
+		  finish(); // closes the activity, pass data to parent
+		} 
+	
 
 	public void onSubmit(View v) {
 	  etItem = (EditText) findViewById(R.id.etEditItem);
