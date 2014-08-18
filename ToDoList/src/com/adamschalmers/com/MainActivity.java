@@ -27,7 +27,7 @@ public class MainActivity extends Activity {
 	//define variables
 	ListView listview;
 	ArrayList<String> items;
-	ArrayAdapter<String> itemsAdapter;
+	ItemAdapter itemsAdapter;
 	EditText addItemEditText;
 
     @Override
@@ -46,9 +46,20 @@ public class MainActivity extends Activity {
         items.add("item 2");
         
         //turn listview arraylist into Android gui listview thing
-        itemsAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, items);
+        itemsAdapter = new ItemAdapter(this, items);
         
         listview.setAdapter(itemsAdapter);
+        
+        
+     /* // Construct the data source
+        ArrayList<User> arrayOfUsers = new ArrayList<User>();
+        // Create the adapter to convert the array to views
+        UsersAdapter adapter = new UsersAdapter(this, arrayOfUsers);
+        // Attach the adapter to a ListView
+        ListView listView = (ListView) findViewById(R.id.lvItems);
+        listView.setAdapter(adapter);*/
+        
+        
         
         setupListViewListener();
     }
