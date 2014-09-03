@@ -86,9 +86,16 @@ public class MainActivity extends Activity {
     
     public void onAddItemClick(View view) {
     	String toAddString = addItemEditText.getText().toString();
+    	// Check the user has entered a new item
     	if (toAddString != null && toAddString.length() > 0) {
-    		itemsAdapter.add(toAddString);
-    		addItemEditText.setText("");
+    		
+    		// If the item is a duplicate, don't add it.
+    		if (items.contains(toAddString)) {
+    			Toast.makeText(this, toAddString + " is already listed", Toast.LENGTH_SHORT).show();
+    		} else { // Add the item
+        		itemsAdapter.add(toAddString);
+        		addItemEditText.setText("");
+    		}
     	}
     }
     
