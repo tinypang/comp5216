@@ -3,7 +3,11 @@ package com.adamschalmers.com;
 import android.app.Activity;
 import android.app.AlertDialog;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+
+import org.apache.commons.io.FileUtils;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -46,6 +50,7 @@ public class MainActivity extends Activity {
         items.add("item 2");
         
         //turn listview arraylist into Android gui listview thing
+        readItemsFromFile();
         itemsAdapter = new ItemAdapter(this, items);
         
         listview.setAdapter(itemsAdapter);
@@ -95,6 +100,7 @@ public class MainActivity extends Activity {
     		} else { // Add the item
         		itemsAdapter.add(toAddString);
         		addItemEditText.setText("");
+        		saveItemsToFile();
     		}
     	}
     }
@@ -112,6 +118,7 @@ public class MainActivity extends Activity {
     						//delete item
     		    			items.remove(position);
     		    			itemsAdapter.notifyDataSetChanged();
+    		    			saveItemsToFile();
     					}
     				})
     				.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -152,10 +159,43 @@ public class MainActivity extends Activity {
     			int position = data.getIntExtra("position",  -1);
     			items.set(position, editedItem);
     			Log.i("Updated Item in list:", editedItem);
-    			Toast.makeText(this,  "updated:" + editedItem, Toast.LENGTH_SHORT).show();
+    			Toast.makeText(this,  "Updated:" + editedItem, Toast.LENGTH_SHORT).show();
     			itemsAdapter.notifyDataSetChanged();
+    			saveItemsToFile();
     		}
     	}
     }
+    
+    private void readItemsFromFile() {
+    	
+    	// Find our file in our app's private directory
+    	File filesDir = getFilesDir();
+    	File todoFile = new File(filesDir, "todo.txt");
+    	
+    	// Read file contents into items if they exist, otherwise make a new empty items
+    	if (!todoFile.exists()) {
+    		items = new ArrayList<String>();
+    	} else {
+    		try {
+    			items = new ArrayList<String>(FileUtils.readLines(todoFile));
+    		} catch (IOException ex) {
+    			items = new ArrayList<String>();
+    		}
+    	}
+    }
+    
+    private void saveItemsToFile() {
+    	// Find our file in our app's private directory
+    	File filesDir = getFilesDir();
+    	File todoFile = new File(filesDir, "todo.txt");
+    	
+    	try {
+    		FileUtils.writeLines(todoFile, items);
+    	} catch (IOException ex) {
+    		ex.printStackTrace();
+    	}
+    	
+    }
+    
     
 }
