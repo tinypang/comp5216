@@ -55,7 +55,7 @@ public class MainActivity extends Activity {
         items.add("item 2");
         
         //turn listview arraylist into Android gui listview thing
-        readItemsFromDatabase();
+        readItemsFromDb();
         itemsAdapter = new ItemAdapter(this, items);
         
         listview.setAdapter(itemsAdapter);
@@ -111,7 +111,7 @@ public class MainActivity extends Activity {
     		} else { // Add the item
         		itemsAdapter.add(toAddString);
         		addItemEditText.setText("");
-        		saveItemsToDatabase();
+        		saveItemToDb(toAddString);
     		}
     	}
     }
@@ -132,9 +132,9 @@ public class MainActivity extends Activity {
     				.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
     					public void onClick(DialogInterface dialog, int id) {
     						//delete item
+    		    			deleteItemFromDb(items.get(position));
     		    			items.remove(position);
     		    			itemsAdapter.notifyDataSetChanged();
-    		    			saveItemsToDatabase();
     					}
     				})
     				.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -172,13 +172,15 @@ public class MainActivity extends Activity {
     	if (requestCode == EDIT_ITEM_REQUEST_CODE) {
     		if (resultCode == RESULT_OK) {
     			// Extract name value from result extras
-    			String editedItem = data.getExtras().getString("item");
     			int position = data.getIntExtra("position",  -1);
-    			items.set(position, editedItem);
-    			Log.i("Updated Item in list:", editedItem);
-    			Toast.makeText(this,  "Updated:" + editedItem, Toast.LENGTH_SHORT).show();
+    			String oldText = items.get(position);
+    			String newText = data.getExtras().getString("item");
+    			items.set(position, newText);
+    			Log.i("Updated Item in list:", newText);
+    			Toast.makeText(this,  "Updated:" + newText, Toast.LENGTH_SHORT).show();
     			itemsAdapter.notifyDataSetChanged();
-    			saveItemsToDatabase();
+    			deleteItemFromDb(oldText);
+    			saveItemToDb(newText);
     		}
     	}
     }
@@ -216,7 +218,8 @@ public class MainActivity extends Activity {
     	
     }
     
-    private void readItemsFromDatabase() {
+    // Read all items from the DB into our Items list
+    private void readItemsFromDb() {
     	List<ToDoItem_Week05> itemsFromORM = new Select().from(ToDoItem_Week05.class).execute();
     	items = new ArrayList<String>();
     	if (itemsFromORM != null && itemsFromORM.size() > 0) {
@@ -226,7 +229,7 @@ public class MainActivity extends Activity {
     	}
     }
     
-    private void saveItemsToDatabase() {
+    private void saveAllItemsToDb() {
     	
     	// Delete all old items
     	new Delete().from(ToDoItem_Week05.class).execute();
@@ -242,4 +245,29 @@ public class MainActivity extends Activity {
     		ActiveAndroid.endTransaction();
     	}
     }
+    
+    // Save a single item to the DB
+    private void saveItemToDb(String todo) {
+    	ActiveAndroid.beginTransaction();
+    	try {
+			ToDoItem_Week05 item = new ToDoItem_Week05(todo);
+			item.save();
+    		ActiveAndroid.setTransactionSuccessful();
+    	} finally {
+    		ActiveAndroid.endTransaction();
+    	}
+    }
+    
+    // Delete a single item from the DB
+	private void deleteItemFromDb(String item) {
+    	ActiveAndroid.beginTransaction();
+    	try {
+    		new Delete().from(ToDoItem_Week05.class).where("name = ?", item).execute();
+    		ActiveAndroid.setTransactionSuccessful();
+    	} finally {
+    		ActiveAndroid.endTransaction();
+    	}
+		
+	}
+    
 }
