@@ -12,7 +12,14 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
+        android:name="com.activeandroid.app.Application"
         android:theme="@style/AppTheme" >
+        <meta-data 
+            android:name="AA_DB_NAME"
+            android:value="WEEK05.db"/>
+        <meta-data
+            android:name="AA_DB_VERSION"
+            android:value="1"/>
         <activity
             android:name=".EditToDoItemActivity"
             android:label="@string/app_name">

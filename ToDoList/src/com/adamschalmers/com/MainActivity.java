@@ -6,8 +6,13 @@ import android.app.AlertDialog;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+
+import com.activeandroid.ActiveAndroid;
+import com.activeandroid.query.Delete;
+import com.activeandroid.query.Select;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -28,7 +33,7 @@ public class MainActivity extends Activity {
 	
 	public final int EDIT_ITEM_REQUEST_CODE = 1243123;
 	
-	//define variables
+	// Define variables
 	ListView listview;
 	ArrayList<String> items;
 	ItemAdapter itemsAdapter;
@@ -50,7 +55,7 @@ public class MainActivity extends Activity {
         items.add("item 2");
         
         //turn listview arraylist into Android gui listview thing
-        readItemsFromFile();
+        readItemsFromDatabase();
         itemsAdapter = new ItemAdapter(this, items);
         
         listview.setAdapter(itemsAdapter);
@@ -89,6 +94,12 @@ public class MainActivity extends Activity {
         return super.onOptionsItemSelected(item);
     } 
     
+    
+    /**
+     * ACTUAL APP LOGIC STARTS HERE
+     */
+    
+    // Activates when the user clicks our Save button
     public void onAddItemClick(View view) {
     	String toAddString = addItemEditText.getText().toString();
     	// Check the user has entered a new item
@@ -100,17 +111,22 @@ public class MainActivity extends Activity {
     		} else { // Add the item
         		itemsAdapter.add(toAddString);
         		addItemEditText.setText("");
-        		saveItemsToFile();
+        		saveItemsToDatabase();
     		}
     	}
     }
     
+    // Listen for clicks or long clicks
     private void setupListViewListener(){
+    	
+    	// On item long click, start the 'delete item' dialog
     	listview.setOnItemLongClickListener(new OnItemLongClickListener() {
     		public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long rowId) {
     			Log.i("MainActivity", "Long Clicked item" + position);
-    			AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
     			String pos = (String) items.get(position);
+    			
+    			// Create and setup the alert dialog builder
+    			AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
     			builder.setTitle(R.string.dialog_delete_title)
     				.setMessage("Delete " + pos + "?")
     				.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
@@ -118,25 +134,25 @@ public class MainActivity extends Activity {
     						//delete item
     		    			items.remove(position);
     		    			itemsAdapter.notifyDataSetChanged();
-    		    			saveItemsToFile();
+    		    			saveItemsToDatabase();
     					}
     				})
     				.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-    				public void onClick(DialogInterface dialog, int id){}
+    					public void onClick(DialogInterface dialog, int id) {}
     				});
     			
     			builder.create().show();
-    					
-    			
-    			
     			return true;
     		}
     	});
+    	
+    	// On item click, start the Edit Item activity
     	listview.setOnItemClickListener(new OnItemClickListener() {
     		public void onItemClick(AdapterView <? > parent, View view, int position, long id) {
 	    		String updateItem = (String) itemsAdapter.getItem(position);
 	    		Log.i("MainActiviy","Clicked item " + position + ": " + updateItem);
 	    		
+	    		// Start the new activity
 	    		Intent intent = new Intent(MainActivity.this, EditToDoItemActivity.class);
 	    		if (intent != null) {
 	    			// put 'extras' into the bundle for access in the edit activity
@@ -151,6 +167,7 @@ public class MainActivity extends Activity {
     	});
     }
     
+    // When we return to this activity from the Edit Item activity, update the edited item.
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     	if (requestCode == EDIT_ITEM_REQUEST_CODE) {
     		if (resultCode == RESULT_OK) {
@@ -161,11 +178,12 @@ public class MainActivity extends Activity {
     			Log.i("Updated Item in list:", editedItem);
     			Toast.makeText(this,  "Updated:" + editedItem, Toast.LENGTH_SHORT).show();
     			itemsAdapter.notifyDataSetChanged();
-    			saveItemsToFile();
+    			saveItemsToDatabase();
     		}
     	}
     }
     
+    // Load the user's last todo list
     private void readItemsFromFile() {
     	
     	// Find our file in our app's private directory
@@ -184,6 +202,7 @@ public class MainActivity extends Activity {
     	}
     }
     
+    // Save the todo list
     private void saveItemsToFile() {
     	// Find our file in our app's private directory
     	File filesDir = getFilesDir();
@@ -197,5 +216,30 @@ public class MainActivity extends Activity {
     	
     }
     
+    private void readItemsFromDatabase() {
+    	List<ToDoItem_Week05> itemsFromORM = new Select().from(ToDoItem_Week05.class).execute();
+    	items = new ArrayList<String>();
+    	if (itemsFromORM != null && itemsFromORM.size() > 0) {
+    		for (ToDoItem_Week05 item:itemsFromORM) {
+    			items.add(item.name);
+    		}
+    	}
+    }
     
+    private void saveItemsToDatabase() {
+    	
+    	// Delete all old items
+    	new Delete().from(ToDoItem_Week05.class).execute();
+    	
+    	ActiveAndroid.beginTransaction();
+    	try {
+    		for (String todo:items) {
+    			ToDoItem_Week05 item = new ToDoItem_Week05(todo);
+    			item.save();
+    		}
+    		ActiveAndroid.setTransactionSuccessful();
+    	} finally {
+    		ActiveAndroid.endTransaction();
+    	}
+    }
 }
